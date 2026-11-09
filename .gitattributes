@@ -1,0 +1,11 @@
+# Unix-переводы строк для скриптов и Makefile, даже если репозиторий клонирован на Windows
+*.sh       text eol=lf
+*.py       text eol=lf
+Makefile   text eol=lf
+*.mk       text eol=lf
+*.c        text eol=lf
+*.h        text eol=lf
+*.md       text eol=lf
+*.csv      text eol=lf
+*.ps1      text eol=crlf
+*.png      binary
