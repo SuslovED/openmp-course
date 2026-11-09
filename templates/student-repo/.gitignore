@@ -1,0 +1,15 @@
+# сборка
+build/
+*.o
+*.exe
+*.dSYM/
+a.out
+# Python
+__pycache__/
+*.pyc
+.venv/
+# редакторы и ОС
+.idea/
+.DS_Store
+Thumbs.db
+# results/*.csv, results/*.meta.json и plots/*.png НЕ игнорируются: их нужно коммитить

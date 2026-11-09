@@ -1,0 +1,72 @@
+# CI курса OpenMP: сборка, тесты корректности, ThreadSanitizer, проверка комплектности отчёта.
+# Запускается при каждом push и pull request. Зелёный CI — обязательное условие сдачи ДЗ.
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  LLVM_VER: "18"          # версия clang по умолчанию в ubuntu-24.04
+  DIRS: "hw0 hw1 hw2 hw3 project"
+
+jobs:
+  build-test:
+    name: build + test (${{ matrix.cc }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        cc: [gcc, clang]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Установка компиляторов
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc make clang-${LLVM_VER} libomp-${LLVM_VER}-dev
+      - name: Сборка и тесты на 1, 2, 4 потоках
+        run: |
+          if [ "${{ matrix.cc }}" = "clang" ]; then CC=clang-${LLVM_VER}; else CC=gcc; fi
+          status=0
+          for d in $DIRS; do
+            [ -f "$d/Makefile" ] || continue
+            echo "::group::$d ($CC)"
+            make -C "$d" CC="$CC" WERROR=-Werror all test || { echo "::error::$d: сборка или тесты не прошли ($CC)"; status=1; }
+            echo "::endgroup::"
+          done
+          exit $status
+
+  tsan:
+    name: ThreadSanitizer (clang + Archer)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Установка clang, libomp, рантайма TSan
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq make clang-${LLVM_VER} libomp-${LLVM_VER}-dev libclang-rt-${LLVM_VER}-dev
+          # TSan в LLVM 18 не работает с высокой энтропией ASLR новых ядер
+          sudo sysctl -w vm.mmap_rnd_bits=28
+      - name: make tsan (2 и 4 потока)
+        env:
+          TSAN_OPTIONS_RUN: "ignore_noninstrumented_modules=1 halt_on_error=1 exitcode=66 history_size=4"
+        run: |
+          status=0
+          for d in $DIRS; do
+            [ -f "$d/Makefile" ] || continue
+            echo "::group::$d"
+            make -C "$d" TSAN_CC=clang-${LLVM_VER} tsan || { echo "::error::$d: ThreadSanitizer нашёл гонку или программа упала"; status=1; }
+            echo "::endgroup::"
+          done
+          exit $status
+
+  check-report:
+    name: Комплектность отчётов
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0      # нужна вся история: проверяем, что прогноз закоммичен до результатов
+      - name: check_report.py
+        run: python3 tools/check_report.py
