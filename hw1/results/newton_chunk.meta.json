@@ -1,0 +1,45 @@
+{
+  "created": "2026-11-24T00:39:53",
+  "hostname": "MacBook-Air-Egor-3.local",
+  "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+  "processor": "arm",
+  "cpu_count_logical": 8,
+  "python": "3.14.7",
+  "cmd": "./build/newton 13 {nx} {nx} par",
+  "threads": [
+    16
+  ],
+  "set": {
+    "nx": [
+      "2000"
+    ]
+  },
+  "env_sweep": {
+    "OMP_SCHEDULE": [
+      "dynamic,1",
+      "dynamic,4",
+      "dynamic,16",
+      "dynamic,64",
+      "dynamic,256",
+      "dynamic,1024"
+    ]
+  },
+  "repeat": 5,
+  "warmup": 1,
+  "omp_env": {},
+  "argv": [
+    "../tools/bench.py",
+    "--cmd",
+    "./build/newton 13 {nx} {nx} par",
+    "--threads",
+    "16",
+    "--set",
+    "nx=2000",
+    "--env",
+    "OMP_SCHEDULE=dynamic,1;dynamic,4;dynamic,16;dynamic,64;dynamic,256;dynamic,1024",
+    "--repeat",
+    "5",
+    "--out",
+    "results/newton_chunk.csv"
+  ]
+}

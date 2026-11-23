@@ -1,0 +1,20 @@
+==================
+WARNING: ThreadSanitizer: data race (pid=23607)
+  Read of size 8 at 0x00016d92a330 by main thread:
+    #0 basins_par newton_ext.c:102 (newton_ext_tsan:arm64+0x100000fc4)
+    #1 main newton_ext.c:151 (newton_ext_tsan:arm64+0x100000fc4)
+
+  Previous atomic write of size 8 at 0x00016d92a330 by thread T1:
+    #0 basins_par.omp_outlined_debug__ newton_ext.c:101 (newton_ext_tsan:arm64+0x1000018d4)
+    #1 basins_par.omp_outlined newton_ext.c:88 (newton_ext_tsan:arm64+0x1000018d4)
+    #2 __kmp_invoke_microtask <null> (libomp.dylib:arm64+0x6b138)
+
+  Location is stack of main thread.
+
+  Thread T1 (tid=1208428, running) created by main thread at:
+    #0 pthread_create <null> (libclang_rt.tsan_osx_dynamic.dylib:arm64e+0x33bac)
+    #1 __kmp_create_worker <null> (libomp.dylib:arm64+0x50efc)
+    #2 start <null> (dyld:arm64e+0x31d78)
+
+SUMMARY: ThreadSanitizer: data race newton_ext.c:102 in basins_par
+==================
